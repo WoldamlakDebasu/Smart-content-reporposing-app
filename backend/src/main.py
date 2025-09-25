@@ -1,13 +1,22 @@
 import os
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from src.models.user import db
+from flask_login import LoginManager
+from src.models.user import db, User
+from src.models.content import Content, DistributionLog
 from src.routes.user import user_bp
 from src.routes.content import content_bp
+from src.routes.analytics import analytics_bp
+from src.routes.subscription import subscription_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -15,9 +24,20 @@ app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 # Enable CORS for all routes
 CORS(app, origins="*")
 
+# Flask-Login setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'user.login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 # Register blueprints
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(content_bp, url_prefix='/api')
+app.register_blueprint(analytics_bp, url_prefix='/api')
+app.register_blueprint(subscription_bp, url_prefix='/api')
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
@@ -28,6 +48,20 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+    
+    # Create a demo user if it doesn't exist
+    try:
+        demo_user = User.query.filter_by(username="demo_user").first()
+        if not demo_user:
+            demo_user = User(
+                username="demo_user",
+                email="demo@example.com"
+            )
+            db.session.add(demo_user)
+            db.session.commit()
+            print("✅ Demo user created for distribution functionality")
+    except Exception as e:
+        print(f"⚠️ Demo user creation skipped: {str(e)}")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

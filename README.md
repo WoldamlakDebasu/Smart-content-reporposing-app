@@ -2,7 +2,7 @@
 
 **Transform your long-form content into engaging, platform-optimized formats with AI-powered automation**
 
-![Smart Content Repurposing Engine](https://img.shields.io/badge/AI-Powered-blue) ![React](https://img.shields.io/badge/React-18.x-61dafb) ![Flask](https://img.shields.io/badge/Flask-2.x-green) ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange)
+![Smart Content Repurposing Engine](https://img.shields.io/badge/AI-Powered-blue) ![React](https://img.shields.io/badge/React-18.x-61dafb) ![Flask](https://img.shields.io/badge/Flask-2.x-green) ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--3.5-orange)
 
 ## 🌟 Overview
 
@@ -10,7 +10,7 @@ The Smart Content Repurposing Engine is a cutting-edge AI-powered application th
 
 ### ✨ Key Features
 
-- **🤖 AI-Powered Analysis**: Advanced content analysis using OpenAI GPT models
+- **🤖 AI-Powered Analysis**: Advanced content analysis using OpenAI GPT-3.5
 - **📱 Multi-Platform Optimization**: Generate content for LinkedIn, Twitter, Facebook, Instagram, and email
 - **📊 Real-Time Processing**: Live progress tracking with detailed status updates
 - **🎨 Modern UI/UX**: Clean, responsive interface built with React and Tailwind CSS
@@ -38,7 +38,7 @@ The Smart Content Repurposing Engine is a cutting-edge AI-powered application th
 ### Backend (Flask)
 - **Framework**: Flask with SQLAlchemy ORM
 - **Database**: SQLite (easily configurable for PostgreSQL/MySQL)
-- **AI Integration**: OpenAI GPT-4 for content analysis and generation
+- **AI Integration**: OpenAI GPT-3.5 for content analysis and generation
 - **API Design**: RESTful endpoints with JSON responses
 - **CORS**: Configured for cross-origin requests
 
