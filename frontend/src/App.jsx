@@ -35,122 +35,6 @@ function App() {
   const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
 
-  // Mock data for demo
-  const mockResults = {
-    id: 1,
-    title: "The Future of Artificial Intelligence in Business",
-    status: "completed",
-    progress: 1.0,
-    analysis_results: {
-      main_theme: "AI in Business",
-      key_topics: ["artificial intelligence", "business automation", "machine learning", "digital transformation"],
-      keywords: ["AI", "automation", "productivity", "innovation", "technology"],
-      sentiment: "positive",
-      tone: "professional",
-      target_audience: "Business leaders and technology professionals",
-      key_takeaways: [
-        "AI is revolutionizing business operations",
-        "Automation reduces costs and improves efficiency", 
-        "Strategic AI adoption provides competitive advantages"
-      ],
-      summary_short: "AI is transforming business through automation and data-driven insights.",
-      summary_medium: "Artificial Intelligence is revolutionizing business operations by automating tasks, providing insights, and enhancing customer experiences.",
-      summary_long: "Artificial Intelligence technologies are becoming integral to modern business operations, offering advantages in data processing, automation, and customer service while presenting challenges in implementation and ethics."
-    },
-    repurposed_outputs: {
-      social_posts: [
-        {
-          platform: "linkedin",
-          text: "🚀 The future of business is AI-powered! From automating routine tasks to providing deep insights through data analysis, AI technologies are becoming essential for modern operations. Companies leveraging machine learning and NLP are seeing enhanced productivity and improved customer experiences. #AI #BusinessInnovation #DigitalTransformation",
-          hashtags: ["AI", "BusinessInnovation", "DigitalTransformation", "MachineLearning"],
-          character_count: 287
-        },
-        {
-          platform: "twitter",
-          text: "AI is revolutionizing business! 🤖 From automation to predictive analytics, companies are gaining competitive advantages through strategic AI adoption. The future belongs to organizations that balance innovation with responsibility. #AI #Business #Innovation",
-          hashtags: ["AI", "Business", "Innovation", "Automation"],
-          character_count: 234
-        },
-        {
-          platform: "facebook",
-          text: "The business landscape is changing rapidly with AI at the forefront! 🌟 Companies across industries are using machine learning, natural language processing, and computer vision to enhance productivity and customer experiences. While challenges exist around privacy and implementation, the potential for growth is enormous. What's your experience with AI in your business?",
-          hashtags: ["AI", "Business", "Technology", "Innovation"],
-          character_count: 398
-        },
-        {
-          platform: "instagram",
-          text: "AI is transforming how we do business! 💼✨ From chatbots to predictive analytics, the possibilities are endless. Swipe to learn more about the future of AI in business! 📊 #AI #Business #Innovation #TechTrends #FutureOfWork",
-          hashtags: ["AI", "Business", "Innovation", "TechTrends", "FutureOfWork"],
-          character_count: 198
-        }
-      ],
-      email_snippets: [
-        {
-          type: "newsletter_teaser",
-          subject: "🤖 How AI is Reshaping Business Operations",
-          content: "Discover how leading companies are leveraging artificial intelligence to automate processes, enhance customer experiences, and gain competitive advantages. From machine learning algorithms to natural language processing, AI is no longer a futuristic concept—it's today's business reality.",
-          cta: "Read the Full Article",
-          word_count: 45
-        },
-        {
-          type: "promotional",
-          subject: "Transform Your Business with AI - Essential Insights Inside",
-          content: "Ready to unlock the power of AI for your business? Our latest analysis reveals how artificial intelligence is revolutionizing operations across industries. Learn about the key advantages, implementation challenges, and strategic approaches that successful companies are using to thrive in the AI-driven future.",
-          cta: "Get Your AI Strategy Guide",
-          word_count: 52
-        }
-      ],
-      short_article: {
-        headline: "How AI is Revolutionizing Modern Business Operations",
-        introduction: "The integration of artificial intelligence into business processes is no longer a distant possibility—it's happening now. Companies across industries are discovering that AI technologies offer unprecedented opportunities to enhance efficiency, improve customer experiences, and gain competitive advantages in an increasingly digital marketplace.",
-        main_content: "The advantages of AI implementation are compelling. Organizations can process vast amounts of data in real-time, enabling faster decision-making and more accurate predictive analytics. Automation of routine tasks frees up human resources for strategic initiatives, while AI-powered customer service tools provide 24/7 support with personalized experiences. However, successful AI adoption requires careful planning, significant investment in infrastructure, and ongoing attention to ethical considerations including data privacy and algorithmic bias.",
-        conclusion: "As we look toward the future, businesses that embrace AI strategically and responsibly will be best positioned to thrive. The key lies in developing comprehensive AI strategies, investing in talent development, and maintaining ethical standards throughout the implementation process.",
-        word_count: 387,
-        reading_time: "2 min read"
-      },
-      infographic_data: {
-        title: "AI in Business: Key Statistics and Insights",
-        statistics: [
-          {
-            label: "Productivity Increase",
-            value: "40%",
-            icon_suggestion: "trending-up"
-          },
-          {
-            label: "Cost Reduction",
-            value: "25%",
-            icon_suggestion: "dollar-sign"
-          },
-          {
-            label: "Customer Satisfaction",
-            value: "35%",
-            icon_suggestion: "heart"
-          },
-          {
-            label: "Decision Speed",
-            value: "60%",
-            icon_suggestion: "zap"
-          }
-        ],
-        sections: [
-          {
-            title: "Key Benefits",
-            description: "Automation, insights, and enhanced customer experiences"
-          },
-          {
-            title: "Main Challenges", 
-            description: "Privacy concerns, implementation costs, and skill gaps"
-          },
-          {
-            title: "Future Outlook",
-            description: "Continued growth in AI adoption across all industries"
-          }
-        ],
-        cta: "Learn More About AI Implementation"
-      }
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -164,32 +48,122 @@ function App() {
     setResults(null)
     setProgress(0)
 
-    // Simulate processing with progress updates
+    // Simulate progress UI
     const progressSteps = [10, 30, 60, 80, 100]
-    const messages = [
-      "Analyzing content structure and themes...",
-      "Extracting key insights and keywords...", 
-      "Generating repurposed content formats...",
-      "Optimizing for different platforms...",
-      "Processing completed!"
-    ]
-
     for (let i = 0; i < progressSteps.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise(resolve => setTimeout(resolve, 500))
       setProgress(progressSteps[i])
     }
 
-    // Set mock results
-    setResults({
-      ...mockResults,
-      title: content.title,
-      original_content: content.text
-    })
-    setIsProcessing(false)
+    try {
+      // Call backend API
+      const response = await fetch('http://localhost:5000/api/content/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: content.title,
+          content: content.text
+        })
+      })
+      if (!response.ok) {
+        throw new Error('Failed to process content. Please try again.')
+      }
+      const data = await response.json()
+      
+      // Start polling for content status
+      if (data.content_id) {
+        await pollContentStatus(data.content_id)
+      } else {
+        setResults(data)
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred while processing content.')
+      setIsProcessing(false)
+    }
   }
 
+  const pollContentStatus = async (contentId) => {
+    try {
+      const maxAttempts = 60 // 60 seconds max (increased timeout)
+      let attempts = 0
+      
+      while (attempts < maxAttempts) {
+        const statusResponse = await fetch(`http://localhost:5000/api/content/${contentId}/status`)
+        if (!statusResponse.ok) {
+          throw new Error('Failed to check content status')
+        }
+        
+        const statusData = await statusResponse.json()
+        console.log(`Polling attempt ${attempts + 1}: Status = ${statusData.status}, Progress = ${statusData.progress}`)
+        
+        if (statusData.status === 'completed') {
+          setResults(statusData)
+          setIsProcessing(false)
+          return
+        } else if (statusData.status === 'error') {
+          throw new Error('Content processing failed: ' + (statusData.error || 'Unknown error'))
+        }
+        
+        // Update progress if available
+        if (statusData.progress) {
+          setProgress(Math.round(statusData.progress * 100))
+        }
+        
+        // Wait 1 second before next poll
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        attempts++
+      }
+      
+      throw new Error('Content processing timed out after 60 seconds. The content may still be processing in the background.')
+    } catch (err) {
+      setError(err.message || 'An error occurred while checking content status.')
+      setIsProcessing(false)
+    }
+  }
+
+  const [isDistributing, setIsDistributing] = useState(false)
+
   const handleDistribute = async (platforms) => {
-    alert(`Distribution scheduled for: ${platforms.join(', ')}`)
+    if (!results || !results.id) {
+      alert('No content available for distribution')
+      return
+    }
+
+    if (isDistributing) {
+      return // Prevent multiple simultaneous distributions
+    }
+
+    try {
+      setIsDistributing(true)
+
+      // Call backend distribution API
+      const response = await fetch(`http://localhost:5000/api/content/${results.id}/distribute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platforms: platforms
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to distribute content')
+      }
+
+      const data = await response.json()
+      
+      // Show success message
+      alert(`✅ Distribution successful!\n\nPlatforms: ${platforms.join(', ')}\n\nContent has been posted to all selected platforms in demo mode. Check the backend logs for details.`)
+
+    } catch (error) {
+      console.error('Distribution error:', error)
+      alert(`❌ Distribution failed: ${error.message}`)
+    } finally {
+      setIsDistributing(false)
+    }
   }
 
   const copyToClipboard = (text) => {
@@ -591,32 +565,36 @@ function App() {
                           variant="outline"
                           onClick={() => handleDistribute(['linkedin'])}
                           className="flex items-center gap-2"
+                          disabled={isDistributing}
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          {isDistributing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                           LinkedIn
                         </Button>
                         <Button
                           variant="outline"
                           onClick={() => handleDistribute(['twitter'])}
                           className="flex items-center gap-2"
+                          disabled={isDistributing}
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          {isDistributing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                           Twitter
                         </Button>
                         <Button
                           variant="outline"
                           onClick={() => handleDistribute(['facebook'])}
                           className="flex items-center gap-2"
+                          disabled={isDistributing}
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          {isDistributing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                           Facebook
                         </Button>
                         <Button
                           variant="outline"
                           onClick={() => handleDistribute(['email'])}
                           className="flex items-center gap-2"
+                          disabled={isDistributing}
                         >
-                          <Mail className="h-4 w-4" />
+                          {isDistributing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                           Email
                         </Button>
                       </div>
@@ -625,9 +603,19 @@ function App() {
                         onClick={() => handleDistribute(['linkedin', 'twitter', 'facebook', 'email'])}
                         className="w-full"
                         size="lg"
+                        disabled={isDistributing}
                       >
-                        <Share2 className="mr-2 h-4 w-4" />
-                        Distribute to All Platforms
+                        {isDistributing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Distributing...
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Distribute to All Platforms
+                          </>
+                        )}
                       </Button>
                     </div>
                   </CardContent>
