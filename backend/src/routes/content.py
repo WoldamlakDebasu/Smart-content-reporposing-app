@@ -1,3 +1,4 @@
+
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 from src.models.content import db, Content, DistributionLog
@@ -13,6 +14,18 @@ from datetime import datetime
 
 content_bp = Blueprint('content', __name__)
 ai_processor = HuggingFaceProcessor()
+
+@content_bp.route('/distribution_logs', methods=['GET'])
+def get_distribution_logs():
+    """Return distribution logs for a given content_id"""
+    try:
+        content_id = request.args.get('content_id', type=int)
+        if not content_id:
+            return jsonify({'error': 'content_id is required'}), 400
+        logs = DistributionLog.query.filter_by(content_id=content_id).all()
+        return jsonify({'logs': [log.to_dict() for log in logs]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @content_bp.route('/content/upload', methods=['POST'])
 def upload_content():

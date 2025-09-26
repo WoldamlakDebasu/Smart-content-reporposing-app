@@ -7,7 +7,6 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import openai
 from openai import OpenAI
-
 from src.models.content import Content, db
 from src.services.local_ai_processor import LocalAIProcessor
 

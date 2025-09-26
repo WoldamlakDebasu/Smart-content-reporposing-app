@@ -40,3 +40,5 @@ class TwitterService:
 
 # Singleton instance
 twitter_service = TwitterService()
+
+

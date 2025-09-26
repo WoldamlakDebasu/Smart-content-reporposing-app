@@ -361,7 +361,7 @@ class AIProcessor:
         """Generate social media posts for different platforms using enhanced RAG context."""
         try:
             prompt = f"""
-            You are an expert social media strategist with access to previous content patterns. 
+            You are an expert social media strategist and marketing specialist with access to previous content patterns and you have more than a decade of experience on marketing and lead generation. 
             Create platform-optimized social media posts that build upon previous content themes while highlighting new insights.
 
             PREVIOUS CONTENT PATTERNS (for consistency and evolution):
@@ -385,9 +385,9 @@ class AIProcessor:
             4. Use insights from previous content to enhance current messaging
 
             Create posts for:
-            1. LinkedIn (professional, 1-2 paragraphs, include relevant hashtags)
+            1. LinkedIn (professional, 3-4 paragraphs, include relevant hashtags)
             2. Twitter/X (concise, under 280 characters, include hashtags)
-            3. Facebook (engaging, 1-2 paragraphs, conversational)
+            3. Facebook (engaging, 3-4 paragraphs, conversational)
             4. Instagram (visual-focused caption, include hashtags and emojis)
 
             Respond with JSON only:
@@ -443,7 +443,7 @@ class AIProcessor:
             Tone: {analysis.get('tone', 'professional')}
 
             Create 2 different email snippets:
-            1. Newsletter teaser (subject line + 2-3 sentences + CTA)
+            1. Newsletter teaser (subject line + 3-4 sentences + CTA)
             2. Promotional email (subject line + engaging content + strong CTA)
 
             Respond with JSON only:
@@ -494,7 +494,7 @@ class AIProcessor:
         """Generate a short article based on the original content and RAG context."""
         try:
             prompt = f"""
-            You are a professional writer. Use the CONTEXT and MAIN CONTENT below to create a short article (300-500 words) based on this content analysis.
+            You are an expert professional writer with more than a decade of experience. Use the CONTEXT and MAIN CONTENT below to create a short article (300-500 words) based on this content analysis.
 
             CONTEXT (previous articles):
             {context}
@@ -605,4 +605,5 @@ class AIProcessor:
                 ],
                 'cta': 'Learn More'
             }
+
 
