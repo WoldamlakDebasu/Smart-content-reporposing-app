@@ -236,3 +236,4 @@ class LocalAIProcessor:
             'image_description': f"Infographic displaying key insights and statistics about {theme}",
             'image_url': None
         }
+
