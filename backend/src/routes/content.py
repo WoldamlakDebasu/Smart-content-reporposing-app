@@ -11,9 +11,79 @@ import threading
 import uuid
 import os
 from datetime import datetime
+# File processing imports
+try:
+    import docx
+    from PyPDF2 import PdfReader
+    import openpyxl
+    import magic
+except ImportError:
+    pass  # Will handle gracefully if libraries not installed
 
 content_bp = Blueprint('content', __name__)
 ai_processor = HuggingFaceProcessor()
+
+def extract_text_from_file(file):
+    """Extract text from uploaded file based on file type"""
+    filename = file.filename.lower()
+    file_content = file.read()
+    file.seek(0)  # Reset file pointer
+    
+    try:
+        if filename.endswith('.txt'):
+            return file_content.decode('utf-8')
+        
+        elif filename.endswith('.pdf'):
+            try:
+                from io import BytesIO
+                from PyPDF2 import PdfReader
+                pdf_file = BytesIO(file_content)
+                reader = PdfReader(pdf_file)
+                text = ""
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+                return text
+            except Exception as e:
+                raise Exception(f"Error reading PDF: {str(e)}")
+        
+        elif filename.endswith(('.docx', '.doc')):
+            try:
+                from io import BytesIO
+                import docx
+                doc_file = BytesIO(file_content)
+                doc = docx.Document(doc_file)
+                text = ""
+                for paragraph in doc.paragraphs:
+                    text += paragraph.text + "\n"
+                return text
+            except Exception as e:
+                raise Exception(f"Error reading Word document: {str(e)}")
+        
+        elif filename.endswith(('.xlsx', '.xls')):
+            try:
+                from io import BytesIO
+                import openpyxl
+                excel_file = BytesIO(file_content)
+                workbook = openpyxl.load_workbook(excel_file)
+                text = ""
+                for sheet in workbook.worksheets:
+                    for row in sheet.iter_rows(values_only=True):
+                        row_text = " ".join([str(cell) for cell in row if cell is not None])
+                        if row_text.strip():
+                            text += row_text + "\n"
+                return text
+            except Exception as e:
+                raise Exception(f"Error reading Excel file: {str(e)}")
+        
+        else:
+            # Try to decode as text for unknown file types
+            try:
+                return file_content.decode('utf-8')
+            except UnicodeDecodeError:
+                raise Exception("Unsupported file type. Please upload TXT, PDF, DOCX, or XLSX files.")
+    
+    except Exception as e:
+        raise Exception(f"Error processing file: {str(e)}")
 
 @content_bp.route('/distribution_logs', methods=['GET'])
 def get_distribution_logs():
@@ -42,6 +112,57 @@ def upload_content():
         
         # Create new content record
         content = Content(title=title, original_content=content_text, content_format=content_format)
+        db.session.add(content)
+        db.session.commit()
+
+        # Process content immediately (synchronous for reliability)
+        try:
+            print(f"🔄 Starting immediate processing for content {content.id}")
+            process_content_sync(content.id)
+            print(f"✅ Immediate processing completed for content {content.id}")
+        except Exception as process_error:
+            print(f"❌ Processing failed for content {content.id}: {str(process_error)}")
+            content.status = 'error'
+            if hasattr(content, 'error_message'):
+                content.error_message = str(process_error)
+            db.session.commit()
+        
+        return jsonify({
+            'content_id': content.id,
+            'status': 'processing',
+            'message': 'Content uploaded successfully and processing started'
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@content_bp.route('/content/upload-file', methods=['POST'])
+def upload_file_content():
+    """Upload file content for processing"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        title = request.form.get('title', '')
+        
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Extract text from file
+        try:
+            content_text = extract_text_from_file(file)
+            if not content_text.strip():
+                return jsonify({'error': 'Could not extract text from file'}), 400
+        except Exception as e:
+            return jsonify({'error': f'Error processing file: {str(e)}'}), 400
+        
+        # Use filename as title if not provided
+        if not title:
+            title = file.filename
+        
+        # Create new content record
+        content = Content(title=title, original_content=content_text, content_format='file')
         db.session.add(content)
         db.session.commit()
         

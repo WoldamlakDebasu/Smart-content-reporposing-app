@@ -30,17 +30,37 @@ function App() {
     title: '',
     text: ''
   })
+  const [uploadMode, setUploadMode] = useState('text') // 'text' or 'file'
+  const [selectedFile, setSelectedFile] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    setSelectedFile(file)
+    if (file && !content.title) {
+      // Auto-fill title with filename (without extension)
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "")
+      setContent({...content, title: nameWithoutExt})
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!content.title.trim() || !content.text.trim()) {
-      setError('Please provide both title and content.')
-      return
+    // Validation based on upload mode
+    if (uploadMode === 'text') {
+      if (!content.title.trim() || !content.text.trim()) {
+        setError('Please provide both title and content.')
+        return
+      }
+    } else if (uploadMode === 'file') {
+      if (!selectedFile) {
+        setError('Please select a file to upload.')
+        return
+      }
     }
 
     setIsProcessing(true)
@@ -56,17 +76,31 @@ function App() {
     }
 
     try {
-      // Call backend API
-      const response = await fetch('http://localhost:5000/api/content/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: content.title,
-          content: content.text
+      let response
+      
+      if (uploadMode === 'text') {
+        // Text upload
+        response = await fetch('http://localhost:5000/api/content/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: content.title,
+            content: content.text
+          })
         })
-      })
+      } else {
+        // File upload
+        const formData = new FormData()
+        formData.append('file', selectedFile)
+        formData.append('title', content.title)
+        
+        response = await fetch('http://localhost:5000/api/content/upload-file', {
+          method: 'POST',
+          body: formData
+        })
+      }
       if (!response.ok) {
         throw new Error('Failed to process content. Please try again.')
       }
@@ -240,47 +274,127 @@ function App() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-base font-semibold mb-2 text-indigo-200">Content Title</label>
-                    <Input
-                      className="bg-gray-800 text-white border-0 focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Enter a descriptive title for your content..."
-                      value={content.title}
-                      onChange={(e) => setContent({...content, title: e.target.value})}
-                      disabled={isProcessing}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-base font-semibold mb-2 text-indigo-200">Long-form Content</label>
-                    <Textarea
-                      className="bg-gray-800 text-white border-0 focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Paste your blog post, article, whitepaper, or any long-form content here..."
-                      value={content.text}
-                      onChange={(e) => setContent({...content, text: e.target.value})}
-                      rows={12}
-                      disabled={isProcessing}
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-200"
-                    disabled={isProcessing}
-                    size="lg"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Processing Content...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-5 w-5 animate-bounce" />
-                        Start AI Processing
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <Tabs value={uploadMode} onValueChange={setUploadMode} className="mb-6">
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+                    <TabsTrigger value="text" className="text-white data-[state=active]:bg-indigo-600">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Text Input
+                    </TabsTrigger>
+                    <TabsTrigger value="file" className="text-white data-[state=active]:bg-indigo-600">
+                      <Upload className="mr-2 h-4 w-4" />
+                      File Upload
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="text">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div>
+                        <label className="block text-base font-semibold mb-2 text-indigo-200">Content Title</label>
+                        <Input
+                          className="bg-gray-800 text-white border-0 focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Enter a descriptive title for your content..."
+                          value={content.title}
+                          onChange={(e) => setContent({...content, title: e.target.value})}
+                          disabled={isProcessing}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-base font-semibold mb-2 text-indigo-200">Long-form Content</label>
+                        <Textarea
+                          className="bg-gray-800 text-white border-0 focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Paste your blog post, article, whitepaper, or any long-form content here..."
+                          value={content.text}
+                          onChange={(e) => setContent({...content, text: e.target.value})}
+                          rows={12}
+                          disabled={isProcessing}
+                        />
+                      </div>
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-200"
+                        disabled={isProcessing}
+                        size="lg"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Processing Content...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="mr-2 h-5 w-5 animate-bounce" />
+                            Start AI Processing
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="file">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div>
+                        <label className="block text-base font-semibold mb-2 text-indigo-200">Content Title (Optional)</label>
+                        <Input
+                          className="bg-gray-800 text-white border-0 focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Enter title or leave blank to use filename..."
+                          value={content.title}
+                          onChange={(e) => setContent({...content, title: e.target.value})}
+                          disabled={isProcessing}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-base font-semibold mb-2 text-indigo-200">Upload Document</label>
+                        <div className="flex items-center justify-center w-full">
+                          <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              {selectedFile ? (
+                                <>
+                                  <FileText className="w-8 h-8 mb-2 text-green-400" />
+                                  <p className="text-sm text-green-400 font-semibold">{selectedFile.name}</p>
+                                  <p className="text-xs text-gray-400">Click to change file</p>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                                  <p className="mb-2 text-sm text-gray-400">
+                                    <span className="font-semibold">Click to upload</span> or drag and drop
+                                  </p>
+                                  <p className="text-xs text-gray-400">PDF, DOCX, TXT, XLSX files supported</p>
+                                </>
+                              )}
+                            </div>
+                            <input
+                              id="file-upload"
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.docx,.doc,.txt,.xlsx,.xls"
+                              onChange={handleFileChange}
+                              disabled={isProcessing}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-200"
+                        disabled={isProcessing || !selectedFile}
+                        size="lg"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Processing File...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="mr-2 h-5 w-5" />
+                            Process File with AI
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
                 {/* Processing Status */}
                 {isProcessing && (
                   <div className="mt-8 p-6 bg-gradient-to-r from-indigo-900 to-blue-900 rounded-xl shadow-lg animate-pulse">
