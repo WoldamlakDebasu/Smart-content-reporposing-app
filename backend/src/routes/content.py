@@ -229,7 +229,7 @@ def distribute_content(content_id):
                         db.session.commit()
                     user_id = demo_user.id
                 
-                log = DistributionLog(content_id=content_id, platform=platform, user_id=user_id)
+                log = DistributionLog(content_id=content_id, platform=platform)
                 db.session.add(log)
                 distribution_logs.append(log)
             except Exception as e:

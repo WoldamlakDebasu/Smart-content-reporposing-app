@@ -80,7 +80,8 @@ function App() {
       
       if (uploadMode === 'text') {
         // Text upload
-        response = await fetch('http://localhost:5000/api/content/upload', {
+        console.log('🔄 Attempting to connect to:', '/api/content/upload')
+        response = await fetch('/api/content/upload', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -90,13 +91,14 @@ function App() {
             content: content.text
           })
         })
+        console.log('✅ Response received:', response.status)
       } else {
         // File upload
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('title', content.title)
         
-        response = await fetch('http://localhost:5000/api/content/upload-file', {
+        response = await fetch('/api/content/upload-file', {
           method: 'POST',
           body: formData
         })
@@ -113,6 +115,12 @@ function App() {
         setResults(data)
       }
     } catch (err) {
+      console.error('❌ Upload error:', err)
+      console.error('❌ Error details:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      })
       setError(err.message || 'An error occurred while processing content.')
       setIsProcessing(false)
     }
@@ -124,7 +132,7 @@ function App() {
       let attempts = 0
       
       while (attempts < maxAttempts) {
-        const statusResponse = await fetch(`http://localhost:5000/api/content/${contentId}/status`)
+        const statusResponse = await fetch(`/api/content/${contentId}/status`)
         if (!statusResponse.ok) {
           throw new Error('Failed to check content status')
         }
@@ -177,7 +185,7 @@ function App() {
 
     try {
       // Call backend distribution API
-      const response = await fetch(`http://localhost:5000/api/content/${results.id}/distribute`, {
+      const response = await fetch(`/api/content/${results.id}/distribute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +218,7 @@ function App() {
     let logs = []
     while (attempts < maxAttempts) {
       try {
-        const logResponse = await fetch(`http://localhost:5000/api/distribution_logs?content_id=${contentId}`)
+        const logResponse = await fetch(`/api/distribution_logs?content_id=${contentId}`)
         if (!logResponse.ok) {
           throw new Error('Failed to fetch distribution logs')
         }

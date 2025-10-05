@@ -10,8 +10,9 @@ load_dotenv('.env')
 # Add src to path
 sys.path.insert(0, 'src')
 
-from src.models.user import db, app, User
+from src.models.user import db, User
 from src.models.content import Content, DistributionLog
+from src.main import app
 
 def init_database():
     """Initialize the database with all tables"""

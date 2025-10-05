@@ -68,7 +68,7 @@ class DistributionLog(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     content_id = db.Column(db.Integer, db.ForeignKey('content.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Commented out - column doesn't exist yet
     platform = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), default='scheduled')  # scheduled, posted, failed
     post_id = db.Column(db.String(255))  # Platform-specific post ID
@@ -79,10 +79,10 @@ class DistributionLog(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    def __init__(self, content_id, platform, user_id=None, scheduled_time=None):
+    def __init__(self, content_id, platform, scheduled_time=None):
         self.content_id = content_id
         self.platform = platform
-        self.user_id = user_id
+        # user_id removed - not needed for now and column doesn't exist
         self.scheduled_time = scheduled_time or datetime.utcnow()
         self.status = 'scheduled'
     
@@ -91,7 +91,7 @@ class DistributionLog(db.Model):
         return {
             'id': self.id,
             'content_id': self.content_id,
-            'user_id': self.user_id,
+            'user_id': getattr(self, 'user_id', None),  # Handle missing column gracefully
             'platform': self.platform,
             'status': self.status,
             'post_id': self.post_id,
